@@ -140,3 +140,51 @@ async def admin_client(client, create_user) -> AsyncClient:
     token = encode_jwt({"sub": str(admin.id)})
     client.headers.update({"Authorization": f"Bearer {token}"})
     return client
+
+
+@pytest.fixture(scope="function")
+async def create_item(connection):
+    created_items = []
+
+    async def _create_item(
+        number: str, type: ItemType, status: ItemStatus = ItemStatus.active
+    ) -> Item:
+        session = AsyncSession(
+            bind=connection, join_transaction_mode="create_savepoint"
+        )
+
+        item = Item(number=number, type=type, status=status)
+
+        session.add(item)
+        await session.commit()
+        await session.refresh(item)
+
+        created_items.append(item)
+
+        return item
+
+    yield _create_item
+
+
+@pytest.fixture(scope="function")
+async def create_booking(connection):
+    created_bookings = []
+
+    async def _create_booking(
+        item_id: int, time_start: datetime, time_end: datetime
+    ) -> Booking:
+        session = AsyncSession(
+            bind=connection, join_transaction_mode="create_savepoint"
+        )
+
+        booking = Booking(item_id=item_id, time_start=time_start, time_end=time_end)
+
+        session.add(booking)
+        await session.commit()
+        await session.refresh(booking)
+
+        created_bookings.append(booking)
+
+        return booking
+
+    yield _create_booking
