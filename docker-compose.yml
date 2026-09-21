@@ -30,5 +30,30 @@ services:
     depends_on:
       - postgres-db
 
+  postgres-test:
+    image: "postgres:15-alpine"
+    container_name: "crm_postgres_test"
+    environment:
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+      - POSTGRES_DB=crm_test_db
+
+  pytest-runner:
+    build: .
+    container_name: crm_test
+    entrypoint: ["pytest"]
+    volumes:
+      - .:/app
+    environment:
+      - DB_HOST=postgres-test
+      - DB_USER=test_user
+      - DB_PASSWORD=test_password
+      - DB_NAME=crm_test_db
+      - JWT_SECRET=super_secret_key
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRE_MINUTES=90
+    depends_on:
+      - postgres-test
+
 volumes:
   pgdata:
