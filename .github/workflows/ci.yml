@@ -1,0 +1,28 @@
+name: Continuous Integration
+
+# Сценарий будет запускаться при каждом Pull Request или Push в ветки main и dev
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest # GitHub бесплатно выделяет чистый сервер на Linux Ubuntu
+
+    steps:
+      # 1. Скачиваем код твоего репозитория на сервер GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Создаем файл .env (если твой docker-compose требует его наличия для запуска)
+      # Мы просто создадим пустой файл, так как все важные переменные для тестов мы уже зашили в compose
+      - name: Create dummy .env file
+        run: touch .env
+
+      # 3. Самый главный шаг: даем команду Docker Compose собрать проект и запустить тесты
+      # Флаг --exit-code-from говорит Docker: "Верни результат работы тестов".
+      # Если pytest упадет, GitHub поймет это и подсветит сборку красным крестиком.
+      - name: Run tests in Docker Compose
+        run: docker compose up --build --exit-code-from pytest-runner

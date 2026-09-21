@@ -1,4 +1,5 @@
 import asyncio  # noqa: F401
+import os
 from datetime import datetime
 from typing import AsyncGenerator  # noqa: UP035
 
@@ -14,7 +15,14 @@ from app.models.item import Item, ItemStatus, ItemType
 from app.models.user import User, UserRole
 from app.utils.user import encode_jwt
 
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/test_crm"
+DB_USER = os.getenv("DB_USER", "test_user")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "test_password")
+DB_HOST = os.getenv("DB_HOST", "postgres-test")
+DB_NAME = os.getenv("DB_NAME", "crm_test_db")
+
+TEST_DATABASE_URL = (
+    f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
+)
 
 # Создаем один глобальный движок
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
